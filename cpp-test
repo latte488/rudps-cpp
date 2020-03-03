@@ -1,0 +1,32 @@
+#!/bin/bash
+
+CXX="g++"
+CXXFLAGS="-std=c++17 -O1 -Iinclude -lcrypto"
+SRC="`basename $1`"
+TEST="test.cpp"
+APP="build/`basename $1 .hpp`.test"
+DEF=`basename $1 .hpp`
+
+if ! [ -d build ]; then
+    mkdir build
+fi
+
+if [ -f $APP ]; then
+    rm $APP
+fi
+
+echo "#include <$SRC>"          >  $TEST
+echo ""                         >> $TEST
+echo "int main()"               >> $TEST
+echo "{"                        >> $TEST
+echo "  return test_${DEF}();"       >> $TEST
+echo "}"                        >> $TEST
+echo ""                         >> $TEST
+
+$CXX $CXXFLAGS $TEST -o $APP
+rm -f $TEST
+
+if [ -f $APP ]; then
+    $APP
+fi
+

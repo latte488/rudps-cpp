@@ -1,2 +1,1 @@
-let g:ale_c_gcc_options = "-W -Wall -Iinclude"
 let g:ale_cpp_gcc_options = "-std=c++17 -W -Wall -Iinclude"
