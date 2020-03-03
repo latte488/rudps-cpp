@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
- && useradd -m -p docker docker \
+ && useradd -m -p docker docker
 
 USER docker
 
@@ -20,6 +20,7 @@ RUN mkdir -p ~/.vim/pack/git-plugins/start \
  && mkdir -p ~/.vim/autoload ~/.vim/bundle \
  && curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim \
  && cd ~/.vim/bundle \
- && git clone https://github.com/dense-analysis/ale.git
-
+ && git clone https://github.com/dense-analysis/ale.git \
+ && cd ~ \
+ && git clone https://github.com/latte488/rudps-cpp.git
 
