@@ -39,7 +39,6 @@ int test_client_for_udp()
         exit(1);
     }
 
-    printf("send size : %lu\n", sizeof(host));
     const int send_size = send(socket_fd, send_data, sizeof(send_data), 0);
 
     if (send_size == -1)

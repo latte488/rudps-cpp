@@ -58,7 +58,7 @@ private:
     mmsghdr m_send_mmhs[MAX_SEND_UNIT];
     std::deque<std::unique_ptr<SendPacket>> m_send_packet_ptr_queue;
 public:
-    explicit UDP(uint16_t port) noexcept
+    explicit UDP(const uint16_t port) noexcept
         : m_socket_fd {socket(AF_INET, SOCK_DGRAM, 0)}
         , m_recv_mmhs {}
         , m_recv_iovs {}
@@ -90,7 +90,7 @@ public:
 
         for (size_t i = 0; i < MAX_RECV_UNIT; ++i)
         {
-            m_recv_packet_ptrs[i] = std::unique_ptr<RecvPacket>();
+            m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
             SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
         }
     }
@@ -106,7 +106,6 @@ public:
 
         if (recvmmsg_result > 0)
         {
-            printf("recv!\n");
             for (int i = 0; i < recvmmsg_result; ++i)
             {
                 m_recv_packet_ptrs[i]->message.size = m_recv_mmhs[i].msg_len;
@@ -119,6 +118,7 @@ public:
 
     void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept
     {
+        printf("send!\n");
         m_send_packet_ptr_queue.push_back(std::move(send_packet_ptr));
     }
 
@@ -131,6 +131,7 @@ public:
         {
             SetToMessageHeader(m_send_mmhs[i].msg_hdr, *m_send_packet_ptr_queue[i]);
         }
+        sendmmsg(m_socket_fd, m_send_mmhs, sendable_packet_size, MSG_DONTWAIT);
         for (size_t i = 0; i < sendable_packet_size; ++i)
         {
             m_send_packet_ptr_queue.pop_front();
@@ -141,7 +142,7 @@ private:
     static void SetToMessageHeader(msghdr& msg_hdr, RecvPacket& recv_packet, iovec& iov) noexcept
     {
         iov.iov_base    = recv_packet.message.data;
-        iov.iov_len     = MTU;
+        iov.iov_len     = sizeof(recv_packet.message.data);
 
         msg_hdr.msg_name        = &recv_packet.address;
         msg_hdr.msg_namelen     = sizeof(recv_packet.address);
@@ -207,7 +208,6 @@ private:
 int test_udp()
 {
     TestUDP udp;
-
     return 0;
 }
 
