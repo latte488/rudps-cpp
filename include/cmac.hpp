@@ -10,22 +10,22 @@
 class CMAC
 {
 private:
-    CMAC_CTX* cmac_ctx;
+    CMAC_CTX* m_cmac_ctx;
     
 public:
 
     explicit CMAC() noexcept
-        : cmac_ctx {CMAC_CTX_new()}
+        : m_cmac_ctx {CMAC_CTX_new()}
     {}
 
     bool Init(uint8_t* key) noexcept
     {
-        return CMAC_Init(cmac_ctx, key, CMAC_KEY_SIZE, EVP_aes_128_cbc(), NULL) == 1;
+        return CMAC_Init(m_cmac_ctx, key, CMAC_KEY_SIZE, EVP_aes_128_cbc(), NULL) == 1;
     }
 
     bool Update(void* message, size_t size) noexcept
     {
-        return CMAC_Update(cmac_ctx, message, size) == 1;
+        return CMAC_Update(m_cmac_ctx, message, size) == 1;
     }
 
     template<class T>
@@ -38,18 +38,21 @@ public:
     bool Final(uint8_t* mac) noexcept
     {
         size_t size;
-        return CMAC_Final(cmac_ctx, mac, &size) == 1;
+        return CMAC_Final(m_cmac_ctx, mac, &size) == 1;
     }
 
     ~CMAC() noexcept
     {
-        CMAC_CTX_free(cmac_ctx);
+        CMAC_CTX_free(m_cmac_ctx);
     }
 };
 
+
+#ifdef TEST
+
 #include <string.h>
 
-int test_cmac()
+int cmac_test()
 {
     CMAC cmac;
     static uint8_t key[CMAC_KEY_SIZE] = 
@@ -88,4 +91,7 @@ int test_cmac()
 }
 
 #endif
+
+#endif
+
 

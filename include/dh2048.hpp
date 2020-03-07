@@ -75,40 +75,43 @@ void setup_rand_seed() noexcept
 class DH2048
 {
 private:
-    DH* dh;
+    DH* m_dh;
 public:
     uint8_t public_key[DHL_KEY_SIZE];
     
     explicit DH2048() noexcept
-        : dh {get_dh2048()}
+        : m_dh {get_dh2048()}
     {
-        if ((dh == NULL) || (!DH_generate_key(dh)))
+        if (m_dh == NULL)
         {
             fprintf(stderr, "failed get_dh2048()\n");
             exit(1);
         }
 
-        if (!DH_generate_key(dh))
+        if (!DH_generate_key(m_dh))
         {
             fprintf(stderr, "failed DH_generator_key()\n");
             exit(1);
         }
 
-        BN_bn2bin(DH_get0_pub_key(dh), public_key);
+        BN_bn2bin(DH_get0_pub_key(m_dh), public_key);
     }
 
     void ComputeKey(uint8_t* key, uint8_t* remote_public_key) noexcept
     {
-        DH_compute_key(key, BN_bin2bn(remote_public_key, DHL_KEY_SIZE, NULL), dh);
+        DH_compute_key(key, BN_bin2bn(remote_public_key, DHL_KEY_SIZE, NULL), m_dh);
     }
 
     ~DH2048() noexcept
     {
-        DH_free(dh);
+        DH_free(m_dh);
     }
 };
 
-int test_dh2048()
+
+#ifdef TEST
+
+int dh2048_test()
 {
     setup_rand_seed();
 
@@ -142,6 +145,8 @@ int test_dh2048()
 
     return 0;
 }
+
+#endif
 
 #endif
 

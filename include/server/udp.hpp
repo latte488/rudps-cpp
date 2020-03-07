@@ -1,54 +1,21 @@
 
-#ifndef UDP_HPP
-#define UDP_HPP
+#ifndef SERVER_UDP_HPP
+#define SERVER_UDP_HPP
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <unistd.h>
-#include <arpa/inet.h>
 
 #include <array>
-#include <vector>
 #include <deque>
-#include <memory>
 
-#include <config.hpp>
+#include <server/interface.hpp>
 
-struct Message
+namespace server
 {
-    uint8_t data[MTU];
-    size_t size;
-};
 
-struct RecvPacket
-{
-    sockaddr_in address;
-    Message message;
-};
-
-struct SendPacket
-{
-    sockaddr_in& address;
-    std::vector<iovec> iovs;
-
-    explicit SendPacket(sockaddr_in& address_, size_t iov_size) noexcept
-        : address {address_}
-        , iovs {iov_size}
-    {
-
-    }
-
-    virtual ~SendPacket() {}
-};
-
-struct IPacketReceiver
-{
-    virtual void Receive(std::unique_ptr<RecvPacket>&& packet_ptr) = 0;
-    virtual ~IPacketReceiver() {}
-};
-
-class UDP
+class UDP : public IPacketUpdaterAndIPacketSender
 {
 private:
     const int m_socket_fd;
@@ -100,7 +67,7 @@ public:
         close(m_socket_fd);
     }
 
-    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept
+    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
     {
         const int recvmmsg_result = recvmmsg(m_socket_fd, m_recv_mmhs, MAX_RECV_UNIT, MSG_DONTWAIT, NULL);
 
@@ -116,13 +83,7 @@ public:
         }
     }
 
-    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept
-    {
-        printf("send!\n");
-        m_send_packet_ptr_queue.push_back(std::move(send_packet_ptr));
-    }
-
-    void SendUpdate() noexcept
+    void SendUpdate() noexcept override
     {
         const size_t send_packet_queue_size = m_send_packet_ptr_queue.size();
         const size_t sendable_packet_size = 
@@ -136,6 +97,11 @@ public:
         {
             m_send_packet_ptr_queue.pop_front();
         }
+    }
+
+    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
+    {
+        m_send_packet_ptr_queue.push_back(std::move(send_packet_ptr));
     }
 
 private:
@@ -165,6 +131,8 @@ private:
     }
 };
 
+#ifdef TEST
+
 class TestSendPacket : public SendPacket
 {
 private:
@@ -179,21 +147,18 @@ public:
     }
 };
 
-class TestUDP : public IPacketReceiver
+
+class TestEchoReceiver : public IPacketReceiver
 {
 private:
-    UDP udp;
+    IPacketSender& m_sender;
+    
 public:
-    explicit TestUDP() noexcept
-        : udp {53548}
+    explicit TestEchoReceiver(IPacketSender& sender) noexcept
+        : m_sender {sender}
     {
-        for (;;)
-        {
-            udp.RecvUpdate(*this);
-            udp.SendUpdate();
-        }
-    }
 
+    }
 private:
     void Receive(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept override
     {
@@ -201,16 +166,37 @@ private:
         printf("msg data : %s \n", recv_packet_ptr->message.data);
 
         auto send_packet_ptr = std::make_unique<TestSendPacket>(std::move(recv_packet_ptr));
-        udp.Send(std::move(send_packet_ptr));
+        m_sender.Send(std::move(send_packet_ptr));
     }
 };
 
-#include <iostream>
-
-int test_udp()
+class TestEchoUpdater
 {
-    TestUDP udp;
+private:
+    IPacketUpdater& m_updater;
+    TestEchoReceiver m_receiver;
+public:
+    explicit TestEchoUpdater(IPacketUpdaterAndIPacketSender& updater_and_sender) noexcept
+        : m_updater {updater_and_sender}
+        , m_receiver {updater_and_sender}
+    {
+        for (;;)
+        {
+            m_updater.RecvUpdate(m_receiver);
+            m_updater.SendUpdate();
+        }
+    }
+};
+
+int udp_test()
+{
+    UDP udp{53548};
+    TestEchoUpdater updater(udp);
     return 0;
+}
+
+#endif
+
 }
 
 #endif

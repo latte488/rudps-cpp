@@ -4,31 +4,39 @@ CXX="g++"
 CXXFLAGS="-std=c++17 -O1"
 CXXINCLUDE="-Iinclude"
 CXXLIB="-lcrypto"
-SRC="`basename $1`"
-TEST="test.cpp"
-APP="build/`basename $1 .hpp`.test"
-DEF=`basename $1 .hpp`
+
+HEADER=${1#include/}
+HEADER_BASENAME=${HEADER%.hpp}
+TEST_FUNC=${HEADER_BASENAME////::}
+TEST_SRC="test.cpp"
+TEST_APP="build/test.app"
+COMPILE="$CXX $CXXFLAGS $CXXINCLUDE $TEST_SRC -o $TEST_APP -lcrypto"
 
 if ! [ -d build ]; then
     mkdir build
 fi
 
-if [ -f $APP ]; then
-    rm $APP
+if [ -f $TEST_APP ]; then
+    rm $TEST_APP
 fi
 
-echo "#include <$SRC>"          >  $TEST
-echo ""                         >> $TEST
-echo "int main()"               >> $TEST
-echo "{"                        >> $TEST
-echo "  return test_${DEF}();"       >> $TEST
-echo "}"                        >> $TEST
-echo ""                         >> $TEST
+echo "#define TEST"                     >  $TEST_SRC
+echo "#include <$HEADER>"               >> $TEST_SRC
+echo ""                                 >> $TEST_SRC
+echo "int main()"                       >> $TEST_SRC
+echo "{"                                >> $TEST_SRC
+echo "  return ${TEST_FUNC}_test();"    >> $TEST_SRC
+echo "}"                                >> $TEST_SRC
+echo ""                                 >> $TEST_SRC
 
-$CXX $CXXFLAGS $CXXINCLUDE $TEST -o $APP -lcrypto
-rm -f $TEST
 
-if [ -f $APP ]; then
-    $APP
+echo $COMPILE
+$COMPILE
+
+rm -f $TEST_SRC
+
+if [ -f $TEST_APP ]; then
+    echo $TEST_APP
+    $TEST_APP
 fi
 
