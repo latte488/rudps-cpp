@@ -10,8 +10,8 @@
 #include <config.hpp>
 
 const uint16_t  port        = 53548;
-const char*     host        = "127.0.0.1";
-const char*     send_data   = "Hello world!";
+const char      host[]      = "127.0.0.1";
+const char      send_data[] = "Hello world!";
 
 int test_client_for_udp()
 {
@@ -39,6 +39,7 @@ int test_client_for_udp()
         exit(1);
     }
 
+    printf("send size : %lu\n", sizeof(host));
     const int send_size = send(socket_fd, send_data, sizeof(send_data), 0);
 
     if (send_size == -1)

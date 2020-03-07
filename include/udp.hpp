@@ -54,7 +54,7 @@ private:
     const int m_socket_fd;
     mmsghdr m_recv_mmhs[MAX_RECV_UNIT];
     iovec m_recv_iovs[MAX_RECV_UNIT];
-    std::array<std::unique_ptr<RecvPacket>, MAX_RECV_UNIT> m_packet_ptrs;
+    std::array<std::unique_ptr<RecvPacket>, MAX_RECV_UNIT> m_recv_packet_ptrs;
     mmsghdr m_send_mmhs[MAX_SEND_UNIT];
     std::deque<std::unique_ptr<SendPacket>> m_send_packet_ptr_queue;
 public:
@@ -62,7 +62,7 @@ public:
         : m_socket_fd {socket(AF_INET, SOCK_DGRAM, 0)}
         , m_recv_mmhs {}
         , m_recv_iovs {}
-        , m_packet_ptrs {}
+        , m_recv_packet_ptrs {}
         , m_send_mmhs {}
         , m_send_packet_ptr_queue {}
     {
@@ -90,8 +90,8 @@ public:
 
         for (size_t i = 0; i < MAX_RECV_UNIT; ++i)
         {
-            m_packet_ptrs[i] = std::unique_ptr<RecvPacket>();
-            SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_packet_ptrs[i], m_recv_iovs[i]);
+            m_recv_packet_ptrs[i] = std::unique_ptr<RecvPacket>();
+            SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
         }
     }
 
@@ -106,12 +106,13 @@ public:
 
         if (recvmmsg_result > 0)
         {
+            printf("recv!\n");
             for (int i = 0; i < recvmmsg_result; ++i)
             {
-                m_packet_ptrs[i]->message.size = m_recv_mmhs[i].msg_len;
-                packet_receiver.Receive(std::move(m_packet_ptrs[i]));
-                m_packet_ptrs[i] = std::make_unique<RecvPacket>();
-                SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_packet_ptrs[i], m_recv_iovs[i]);
+                m_recv_packet_ptrs[i]->message.size = m_recv_mmhs[i].msg_len;
+                packet_receiver.Receive(std::move(m_recv_packet_ptrs[i]));
+                m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
+                SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
             }
         }
     }
@@ -139,6 +140,9 @@ public:
 private:
     static void SetToMessageHeader(msghdr& msg_hdr, RecvPacket& recv_packet, iovec& iov) noexcept
     {
+        iov.iov_base    = recv_packet.message.data;
+        iov.iov_len     = MTU;
+
         msg_hdr.msg_name        = &recv_packet.address;
         msg_hdr.msg_namelen     = sizeof(recv_packet.address);
         msg_hdr.msg_iov         = &iov;
