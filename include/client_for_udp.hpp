@@ -7,6 +7,8 @@
 
 #include <arpa/inet.h>
 
+#include <iostream>
+
 #include <config.hpp>
 
 const uint16_t  port        = 53548;

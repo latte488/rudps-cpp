@@ -1,7 +1,9 @@
 #!/bin/bash
 
 CXX="g++"
-CXXFLAGS="-std=c++17 -O1 -Iinclude -lcrypto"
+CXXFLAGS="-std=c++17 -O1"
+CXXINCLUDE="-Iinclude"
+CXXLIB="-lcrypto"
 SRC="`basename $1`"
 TEST="test.cpp"
 APP="build/`basename $1 .hpp`.test"
@@ -23,7 +25,7 @@ echo "  return test_${DEF}();"       >> $TEST
 echo "}"                        >> $TEST
 echo ""                         >> $TEST
 
-$CXX $CXXFLAGS $TEST -o $APP
+$CXX $CXXFLAGS $CXXINCLUDE $TEST -o $APP -lcrypto
 rm -f $TEST
 
 if [ -f $APP ]; then

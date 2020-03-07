@@ -205,6 +205,8 @@ private:
     }
 };
 
+#include <iostream>
+
 int test_udp()
 {
     TestUDP udp;
