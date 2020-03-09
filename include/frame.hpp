@@ -33,14 +33,17 @@ public:
     {
         return count;
     }
+
     const long& Time() const noexcept
     {
         return tp.tv_sec;
     }
+
     const long& NanoTime() const noexcept
     {
         return tp.tv_nsec;
     }
+
     const long& DeltaTime() const  noexcept
     {
         return delta;
