@@ -54,8 +54,6 @@ public:
 #ifdef TEST
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
 
 int frame_test()
 {

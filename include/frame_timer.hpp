@@ -33,10 +33,8 @@ public:
     }
 };
 
-
 #ifdef TEST
 
-#include <stdlib.h>
 #include <stdio.h>
 
 int frame_timer_test()
@@ -45,8 +43,6 @@ int frame_timer_test()
     FrameTimer timer;
 
     timer.Setup(1e9);
-
-    srand(48);
 
     size_t s = 0;
 
