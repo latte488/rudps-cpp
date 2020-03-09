@@ -1,28 +1,30 @@
-#define TEST
-#ifndef SERVER_PACKET_LOSS_SIMULATOR_HPP
-#define SERVER_PACKET_LOSS_SIMULATOR_HPP
+
+#ifndef PACKET_LOSS_SIMULATOR_HPP
+#define PACKET_LOSS_SIMULATOR_HPP
 
 #include <random>
 #include <algorithm>
 
-#include <server/udp.hpp>
+#include <udp.hpp>
 
-namespace server
-{
-
-class PacketLossSimulator : public IPacketUpdaterAndIPacketSender
+class PacketLossSimulator : public IUDP
 {
 private:
     UDP m_udp;
     std::mt19937 m_rand;
     uint_fast32_t m_percent;
 public:
-    explicit PacketLossSimulator(const uint16_t port, uint_fast32_t percent) noexcept
-        : m_udp {port}
+    explicit PacketLossSimulator(uint_fast32_t percent) noexcept
+        : m_udp {}
         , m_rand {48}
         , m_percent {std::min(std::max((uint_fast32_t)0, percent), (uint_fast32_t)100)}
     {
         
+    }
+
+    void Bind(const uint16_t port) noexcept override
+    {
+        m_udp.Bind(port);
     }
 
     void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
@@ -44,19 +46,20 @@ public:
     }
 };
 
+#define TEST
 #ifdef TEST
 
-int test_packet_loss_simulator()
+#include <client.hpp>
+
+int packet_loss_simulator_test()
 {
-    PacketLossSimulator udp(53548, 30);
-    TestEchoUpdater updater(udp);
+    PacketLossSimulator simulator(20);
+    TestEchoClient{simulator};
 
     return 0;
 }
 
 #endif
-
-}
 
 #endif
 

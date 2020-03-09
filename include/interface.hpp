@@ -1,13 +1,17 @@
 
-#ifndef SERVER_INTERFACE_HPP
-#define SERVER_INTERFACE_HPP
+#ifndef INTERFACE_HPP
+#define INTERFACE_HPP
 
 #include <memory>
 
-#include <server/packet.hpp>
+#include <packet.hpp>
 
-namespace server
+
+struct IBinder
 {
+    virtual void Bind(const uint16_t port) = 0;
+    virtual ~IBinder() {}
+};
 
 struct IPacketReceiver
 {
@@ -28,12 +32,27 @@ struct IPacketSender
     virtual ~IPacketSender() {}
 };
 
-struct IPacketUpdaterAndIPacketSender : public IPacketUpdater, public IPacketSender
+struct IUDP 
+    : public IBinder
+    , public IPacketUpdater
+    , public IPacketSender
 {
 
 };
 
-}
+struct IClient 
+    : public IPacketUpdater
+    , public IPacketSender
+{
+
+};
+
+struct IServer 
+    : public IPacketUpdater
+    , public IPacketSender
+{
+
+};
 
 #endif
 

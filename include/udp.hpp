@@ -1,6 +1,6 @@
 
-#ifndef SERVER_UDP_HPP
-#define SERVER_UDP_HPP
+#ifndef UDP_HPP
+#define UDP_HPP
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,22 +10,19 @@
 #include <array>
 #include <deque>
 
-#include <server/interface.hpp>
+#include <interface.hpp>
 
-namespace server
-{
-
-class UDP : public IPacketUpdaterAndIPacketSender
+class UDP : public IUDP
 {
 private:
     const int m_socket_fd;
     mmsghdr m_recv_mmhs[MAX_RECV_UNIT];
     iovec m_recv_iovs[MAX_RECV_UNIT];
-    std::array<std::unique_ptr<RecvPacket>, MAX_RECV_UNIT> m_recv_packet_ptrs;
+    std::unique_ptr<RecvPacket> m_recv_packet_ptrs[MAX_RECV_UNIT];
     mmsghdr m_send_mmhs[MAX_SEND_UNIT];
     std::deque<std::unique_ptr<SendPacket>> m_send_packet_ptr_queue;
 public:
-    explicit UDP(const uint16_t port) noexcept
+    explicit UDP() noexcept
         : m_socket_fd {socket(AF_INET, SOCK_DGRAM, 0)}
         , m_recv_mmhs {}
         , m_recv_iovs {}
@@ -39,6 +36,16 @@ public:
             exit(1);
         }
 
+
+        for (size_t i = 0; i < MAX_RECV_UNIT; ++i)
+        {
+            m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
+            SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
+        }
+    }
+
+    void Bind(const uint16_t port) noexcept override
+    {
         sockaddr_in address
         {
             .sin_family = AF_INET,
@@ -53,12 +60,6 @@ public:
         {
             perror("bind");
             exit(1);
-        }
-
-        for (size_t i = 0; i < MAX_RECV_UNIT; ++i)
-        {
-            m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
-            SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
         }
     }
 
@@ -123,8 +124,8 @@ private:
     {
         msg_hdr.msg_name        = &send_packet.address;
         msg_hdr.msg_namelen     = sizeof(send_packet.address);
-        msg_hdr.msg_iov         = send_packet.iovs.data();
-        msg_hdr.msg_iovlen      = send_packet.iovs.size();
+        msg_hdr.msg_iov         = send_packet.iovs.get();
+        msg_hdr.msg_iovlen      = send_packet.iovs_size;
         msg_hdr.msg_control     = NULL;
         msg_hdr.msg_controllen  = 0;
         msg_hdr.msg_flags       = 0;
@@ -133,71 +134,13 @@ private:
 
 #ifdef TEST
 
-class TestSendPacket : public SendPacket
-{
-private:
-    std::unique_ptr<RecvPacket> m_recv_packet_ptr;
-public:
-    explicit TestSendPacket(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept
-        : SendPacket {recv_packet_ptr->address, 1}
-        , m_recv_packet_ptr {std::move(recv_packet_ptr)}
-    {
-        iovs[0].iov_base   = m_recv_packet_ptr->message.data;
-        iovs[0].iov_len    = m_recv_packet_ptr->message.size;
-    }
-};
-
-
-class TestEchoReceiver : public IPacketReceiver
-{
-private:
-    IPacketSender& m_sender;
-    
-public:
-    explicit TestEchoReceiver(IPacketSender& sender) noexcept
-        : m_sender {sender}
-    {
-
-    }
-private:
-    void Receive(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept override
-    {
-        printf("msg size : %lu\n", recv_packet_ptr->message.size);
-        printf("msg data : %s \n", recv_packet_ptr->message.data);
-
-        auto send_packet_ptr = std::make_unique<TestSendPacket>(std::move(recv_packet_ptr));
-        m_sender.Send(std::move(send_packet_ptr));
-    }
-};
-
-class TestEchoUpdater
-{
-private:
-    IPacketUpdater& m_updater;
-    TestEchoReceiver m_receiver;
-public:
-    explicit TestEchoUpdater(IPacketUpdaterAndIPacketSender& updater_and_sender) noexcept
-        : m_updater {updater_and_sender}
-        , m_receiver {updater_and_sender}
-    {
-        for (;;)
-        {
-            m_updater.RecvUpdate(m_receiver);
-            m_updater.SendUpdate();
-        }
-    }
-};
-
 int udp_test()
 {
-    UDP udp{53548};
-    TestEchoUpdater updater(udp);
+    printf("This test are on `server.hpp` and `client.hpp`.\n");
     return 0;
 }
 
 #endif
-
-}
 
 #endif
 
