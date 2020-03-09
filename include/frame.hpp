@@ -59,12 +59,6 @@ public:
 
 int frame_test()
 {
-    Frame frame;
-
-    printf("Time        : %lus\n", frame.Time());
-    printf("Nano time   : %luns\n", frame.NanoTime());
-    printf("\n");
-    
     auto heavy = []
     {
         size_t sum = 0;
@@ -74,15 +68,17 @@ int frame_test()
         }
     };
 
+    Frame frame;
+    
     for (size_t i = 0; i < 8; ++i)
     {
         frame.Update();
-        printf("Frame count : %lu\n", frame.Count());
-        printf("Delta time  : %ldns\n", frame.DeltaTime());
+        printf("frame.Count     : %lu\n",   frame.Count());
+        printf("frame.Time      : %lus\n",  frame.Time());
+        printf("frame.NanoTime  : %luns\n", frame.NanoTime());
+        printf("frame.DeltaTime : %ldns\n", frame.DeltaTime());
 
         heavy();
-        printf("Heavy\n");
-        printf("\n");
     }
 
     return 0;
