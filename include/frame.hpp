@@ -77,7 +77,7 @@ int frame_test()
         printf("frame.Time      : %lus\n",  frame.Time());
         printf("frame.NanoTime  : %luns\n", frame.NanoTime());
         printf("frame.DeltaTime : %ldns\n", frame.DeltaTime());
-
+        printf("\n");
         heavy();
     }
 
