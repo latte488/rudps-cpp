@@ -7,29 +7,29 @@
 class FrameTimer
 {
 private:
-    long interval;
-    long timer;
+    long m_interval;
+    long m_timer;
 
 public:
 
     void Setup(long nano) noexcept
     {
-        timer = interval = (nano <= 0) ? 0 : nano;
+        m_timer = m_interval = (nano <= 0) ? 0 : nano;
     }
 
     void Update(Frame& frame) noexcept
     {
-        timer -= frame.DeltaTime();
+        m_timer -= frame.DeltaTime();
     }
 
     void Reset() noexcept
     {
-        timer = interval;
+        m_timer = m_interval;
     }
 
     bool IsExpired() const noexcept
     {
-        return (timer <= 0);
+        return (m_timer <= 0);
     }
 };
 
