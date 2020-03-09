@@ -7,46 +7,46 @@
 struct Frame
 {
 private:
-    size_t count;
-    timespec tp;
-    long delta;
+    size_t m_count;
+    timespec m_tp;
+    long m_delta;
 public:
     explicit Frame() noexcept
-        : count {0}
-        , tp {}
-        , delta {0}
+        : m_count {0}
+        , m_tp {}
+        , m_delta {0}
     {
-        clock_gettime(CLOCK_REALTIME_COARSE, &tp);
+        clock_gettime(CLOCK_REALTIME_COARSE, &m_tp);
     }
     
     void Update() noexcept
     {
-        ++count;
+        ++m_count;
 
-        long prev_nsec = tp.tv_nsec;
-        clock_gettime(CLOCK_REALTIME_COARSE, &tp);
-        delta = tp.tv_nsec - prev_nsec;
-        delta += (delta < 0) ? 1e9 : 0;
+        long prev_nsec = m_tp.tv_nsec;
+        clock_gettime(CLOCK_REALTIME_COARSE, &m_tp);
+        m_delta = m_tp.tv_nsec - prev_nsec;
+        m_delta += (m_delta < 0) ? 1e9 : 0;
     }
 
     const size_t& Count() const noexcept
     {
-        return count;
+        return m_count;
     }
 
     const long& Time() const noexcept
     {
-        return tp.tv_sec;
+        return m_tp.tv_sec;
     }
 
     const long& NanoTime() const noexcept
     {
-        return tp.tv_nsec;
+        return m_tp.tv_nsec;
     }
 
     const long& DeltaTime() const  noexcept
     {
-        return delta;
+        return m_delta;
     }
 };
 
