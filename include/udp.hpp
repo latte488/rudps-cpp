@@ -44,7 +44,7 @@ public:
         }
     }
 
-    void Bind(const uint16_t port) noexcept override
+    void Bind(const uint16_t port) noexcept
     {
         sockaddr_in address
         {
@@ -136,7 +136,7 @@ private:
 
 int udp_test()
 {
-    printf("This test are on `server.hpp` and `client.hpp`.\n");
+    printf("This test are on `test_echo_server.hpp` and `test_echo_client.hpp`.\n");
     return 0;
 }
 

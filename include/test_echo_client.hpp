@@ -1,45 +1,20 @@
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
-
-#include <interface.hpp>
-
-class Client : public INetworkIO
-{
-private:
-    IUDP& m_udp;
-public:
-    explicit Client(IUDP& udp) noexcept
-        : m_udp {udp}
-    {
-    }
-
-    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
-    {
-        m_udp.UpdateOfReceivePacket(receiver);
-    }
-
-    void UpdateOfSendPacket() noexcept override
-    {
-        m_udp.UpdateOfSendPacket();
-    }
-
-    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
-    {
-        m_udp.Send(std::move(send_packet_ptr));
-    }
-};
+#ifndef TEST_ECHO_CLIENT_HPP
+#define TEST_ECHO_CLIENT_HPP
 
 #define TEST
 #ifdef TEST
 
-#include <frame_timer.hpp>
 #include <string.h>
+
+#include <interface.hpp>
+#include <udp.hpp>
+#include <frame_timer.hpp>
 
 class TestEchoClient : public IReceiverOfPacket
 {
 private:
-    Client m_client;
+    IUDP& m_client;
     Frame m_frame;
     FrameTimer m_timer;
 
@@ -95,9 +70,8 @@ public:
     }
 };
 
-#include <udp.hpp>
 
-int client_test()
+int test_echo_client_test()
 {
     UDP udp;
     TestEchoClient{udp};

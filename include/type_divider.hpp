@@ -4,7 +4,7 @@
 
 #include <type_empty_receiver.hpp>
 
-class TypeDivider
+class TypeDivider : public IReceiverOfPacket
 {
 private:
     std::unique_ptr<IReceiverOfTypePacket> receiver_ptrs[UINT8_MAX + 1];
@@ -19,17 +19,14 @@ public:
     }
 
     void SetReceiver(const uint8_t type, std::unique_ptr<IReceiverOfTypePacket>&& receiver_ptr) noexcept
-    {
+    { 
         receiver_ptrs[type] = std::move(receiver_ptr);
     }
 
-    void Receive(std::unique_ptr<ReceivePacket>&& recv_packet) noexcept
+    void Receive(std::unique_ptr<ReceivePacket>&& recv_packet) noexcept override
     {
-        uint8_t type = recv_packet->message.data[0] & UINT8_MAX;
-        receiver_ptrs[type]->Receive
-        (
-            std::make_unique<TypeReceivePacket>(std::move(recv_packet))
-        );
+        auto& receiver = receiver_ptrs[recv_packet->message.data[0]];
+        receiver->Receive(std::make_unique<TypeReceivePacket>(std::move(recv_packet)));
     }
 };
 

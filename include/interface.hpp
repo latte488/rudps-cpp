@@ -13,22 +13,22 @@ struct IReceiverOfPacket
     virtual ~IReceiverOfPacket() {}
 };
 
+struct ISender
+{
+    virtual void Send(std::unique_ptr<SendPacket>&&) = 0;
+    virtual ~ISender() {}
+};
+    
+struct IUDP : public ISender
+{
+    virtual void UpdateOfReceivePacket(IReceiverOfPacket&) = 0;
+    virtual void UpdateOfSendPacket() = 0;
+};
+
 struct IReceiverOfTypePacket
 {
     virtual void Receive(std::unique_ptr<TypeReceivePacket>&&) = 0;
     virtual ~IReceiverOfTypePacket() {}
-};
-
-struct INetworkIO
-{
-    virtual void UpdateOfReceivePacket(IReceiverOfPacket&) = 0;
-    virtual void UpdateOfSendPacket() = 0;
-    virtual void Send(std::unique_ptr<SendPacket>&&) = 0;
-};
-
-struct IUDP : public INetworkIO
-{
-    virtual void Bind(const uint16_t port) = 0;
 };
 
 #endif

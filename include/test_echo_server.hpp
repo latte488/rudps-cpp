@@ -1,38 +1,12 @@
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
-
-#include <interface.hpp>
-
-class Server : public INetworkIO
-{
-private:
-    IUDP& m_udp;
-public:
-    explicit Server(IUDP& udp, const uint16_t port) noexcept
-        : m_udp {udp}
-    {
-        m_udp.Bind(port);
-    }
-
-    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
-    {
-        m_udp.UpdateOfReceivePacket(receiver);
-    }
-
-    void UpdateOfSendPacket() noexcept override
-    {
-        m_udp.UpdateOfSendPacket();
-    }
-
-    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
-    {
-        m_udp.Send(std::move(send_packet_ptr));
-    }
-};
+#ifndef TEST_ECHO_SERVER_HPP
+#define TEST_ECHO_SERVER_HPP
 
 #define TEST
 #ifdef TEST
+
+#include <interface.hpp>
+#include <udp.hpp>
 
 class TestEchoReply : public SendPacket
 {
@@ -52,10 +26,10 @@ public:
 class TestEchoServer : public IReceiverOfPacket
 {
 private:
-    Server m_server;
+    IUDP& m_server;
 public:
     explicit TestEchoServer(IUDP& udp) noexcept
-        : m_server {udp, 53548}
+        : m_server {udp}
     {
         for (;;)
         {
@@ -76,11 +50,10 @@ public:
     }
 };
 
-#include <udp.hpp>
-
-int server_test()
+int test_echo_server_test()
 {
     UDP udp;
+    udp.Bind(53548);
     TestEchoServer{udp};
     return 0;
 }
