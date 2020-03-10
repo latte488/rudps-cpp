@@ -5,7 +5,7 @@
 #include <server.hpp>
 #include <type_divider.hpp>
 
-class TypeServer
+class TypeServer :
 {
 private:
     Server m_server;

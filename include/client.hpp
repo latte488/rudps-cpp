@@ -2,9 +2,9 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <i_udp.hpp>
+#include <interface.hpp>
 
-class Client : public IUDPSender
+class Client : public INetworkIO
 {
 private:
     IUDP& m_udp;
@@ -14,14 +14,14 @@ public:
     {
     }
 
-    void RecvUpdate(IReceiver& receiver) noexcept override
+    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
     {
-        m_udp.RecvUpdate(receiver);
+        m_udp.UpdateOfReceivePacket(receiver);
     }
 
-    void SendUpdate() noexcept override
+    void UpdateOfSendPacket() noexcept override
     {
-        m_udp.SendUpdate();
+        m_udp.UpdateOfSendPacket();
     }
 
     void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
@@ -36,7 +36,7 @@ public:
 #include <frame_timer.hpp>
 #include <string.h>
 
-class TestEchoClient : public IReceiver
+class TestEchoClient : public IReceiverOfPacket
 {
 private:
     Client m_client;
@@ -67,7 +67,7 @@ public:
             m_frame.Update();
             m_timer.Update(m_frame);
 
-            m_client.RecvUpdate(*this);
+            m_client.UpdateOfReceivePacket(*this);
             
             if (m_timer.IsExpired())
             {
@@ -83,11 +83,11 @@ public:
                 m_client.Send(std::move(send_packet_ptr));
             }
 
-            m_client.SendUpdate();
+            m_client.UpdateOfSendPacket();
         }
     }
     
-    void Receive(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept override
+    void Receive(std::unique_ptr<ReceivePacket>&& recv_packet_ptr) noexcept override
     {   
         printf("msg size : %lu\n", recv_packet_ptr->message.size);
         printf("msg data : %s \n", recv_packet_ptr->message.data);

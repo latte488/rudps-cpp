@@ -2,9 +2,9 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <i_udp.hpp>
+#include <interface.hpp>
 
-class Server : public IUDPSender
+class Server : public INetworkIO
 {
 private:
     IUDP& m_udp;
@@ -15,14 +15,14 @@ public:
         m_udp.Bind(port);
     }
 
-    void RecvUpdate(IReceiver& receiver) noexcept override
+    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
     {
-        m_udp.RecvUpdate(receiver);
+        m_udp.UpdateOfReceivePacket(receiver);
     }
 
-    void SendUpdate() noexcept override
+    void UpdateOfSendPacket() noexcept override
     {
-        m_udp.SendUpdate();
+        m_udp.UpdateOfSendPacket();
     }
 
     void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
@@ -37,9 +37,9 @@ public:
 class TestEchoReply : public SendPacket
 {
 private:
-    std::unique_ptr<RecvPacket> m_recv_packet_ptr;
+    std::unique_ptr<ReceivePacket> m_recv_packet_ptr;
 public:
-    explicit TestEchoReply(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept
+    explicit TestEchoReply(std::unique_ptr<ReceivePacket>&& recv_packet_ptr) noexcept
         : SendPacket {recv_packet_ptr->address, 1}
         , m_recv_packet_ptr {std::move(recv_packet_ptr)}
     {
@@ -49,7 +49,7 @@ public:
 };
 
 
-class TestEchoServer : public IReceiver
+class TestEchoServer : public IReceiverOfPacket
 {
 private:
     Server m_server;
@@ -59,12 +59,12 @@ public:
     {
         for (;;)
         {
-            m_server.RecvUpdate(*this);
-            m_server.SendUpdate();
+            m_server.UpdateOfReceivePacket(*this);
+            m_server.UpdateOfSendPacket();
         }
     }
 
-    void Receive(std::unique_ptr<RecvPacket>&& recv_packet_ptr) noexcept override
+    void Receive(std::unique_ptr<ReceivePacket>&& recv_packet_ptr) noexcept override
     {
         printf("msg size : %lu\n", recv_packet_ptr->message.size);
         printf("msg data : %s \n", recv_packet_ptr->message.data);

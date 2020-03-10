@@ -2,11 +2,11 @@
 #ifndef TYPE_EMPTY_RECEIVER_HPP
 #define TYPE_EMPTY_RECEIVER_HPP
 
-#include <i_type_receiver.hpp>
+#include <interface.hpp>
 
-class TypeEmptyReceiver : public ITypeReceiver
+class TypeEmptyReceiver : public IReceiverOfTypePacket
 {
-    void Receive(std::unique_ptr<TypeRecvPacket>&&) noexcept
+    void Receive(std::unique_ptr<TypeReceivePacket>&&) noexcept
     {
 
     }

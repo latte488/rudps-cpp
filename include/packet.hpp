@@ -8,7 +8,7 @@
 
 #include <message.hpp>
 
-struct RecvPacket
+struct ReceivePacket
 {
     sockaddr_in address;
     Message message;

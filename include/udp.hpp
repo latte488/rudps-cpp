@@ -10,7 +10,7 @@
 #include <array>
 #include <deque>
 
-#include <i_udp.hpp>
+#include <interface.hpp>
 
 class UDP : public IUDP
 {
@@ -18,7 +18,7 @@ private:
     const int m_socket_fd;
     mmsghdr m_recv_mmhs[MAX_RECV_UNIT];
     iovec m_recv_iovs[MAX_RECV_UNIT];
-    std::unique_ptr<RecvPacket> m_recv_packet_ptrs[MAX_RECV_UNIT];
+    std::unique_ptr<ReceivePacket> m_recv_packet_ptrs[MAX_RECV_UNIT];
     mmsghdr m_send_mmhs[MAX_SEND_UNIT];
     std::deque<std::unique_ptr<SendPacket>> m_send_packet_ptr_queue;
 public:
@@ -39,7 +39,7 @@ public:
 
         for (size_t i = 0; i < MAX_RECV_UNIT; ++i)
         {
-            m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
+            m_recv_packet_ptrs[i] = std::make_unique<ReceivePacket>();
             SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
         }
     }
@@ -68,7 +68,7 @@ public:
         close(m_socket_fd);
     }
 
-    void RecvUpdate(IReceiver& receiver) noexcept override
+    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
     {
         const int recvmmsg_result = recvmmsg(m_socket_fd, m_recv_mmhs, MAX_RECV_UNIT, MSG_DONTWAIT, NULL);
 
@@ -78,13 +78,13 @@ public:
             {
                 m_recv_packet_ptrs[i]->message.size = m_recv_mmhs[i].msg_len;
                 receiver.Receive(std::move(m_recv_packet_ptrs[i]));
-                m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
+                m_recv_packet_ptrs[i] = std::make_unique<ReceivePacket>();
                 SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
             }
         }
     }
 
-    void SendUpdate() noexcept override
+    void UpdateOfSendPacket() noexcept override
     {
         const size_t send_packet_queue_size = m_send_packet_ptr_queue.size();
         const size_t sendable_packet_size = 
@@ -106,7 +106,7 @@ public:
     }
 
 private:
-    static void SetToMessageHeader(msghdr& msg_hdr, RecvPacket& recv_packet, iovec& iov) noexcept
+    static void SetToMessageHeader(msghdr& msg_hdr, ReceivePacket& recv_packet, iovec& iov) noexcept
     {
         iov.iov_base    = recv_packet.message.data;
         iov.iov_len     = sizeof(recv_packet.message.data);
