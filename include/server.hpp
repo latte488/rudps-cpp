@@ -2,21 +2,22 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <interface.hpp>
+#include <i_udp.hpp>
 
-class Server : public IServer
+class Server : public IUDPSender
 {
 private:
     IUDP& m_udp;
 public:
-    explicit Server(IUDP& udp) noexcept
+    explicit Server(IUDP& udp, const uint16_t port) noexcept
         : m_udp {udp}
     {
+        m_udp.Bind(port);
     }
 
-    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
+    void RecvUpdate(IReceiver& receiver) noexcept override
     {
-        m_udp.RecvUpdate(packet_receiver);
+        m_udp.RecvUpdate(receiver);
     }
 
     void SendUpdate() noexcept override
@@ -24,9 +25,9 @@ public:
         m_udp.SendUpdate();
     }
 
-    void Send(std::unique_ptr<SendPacket>&& send_packet) noexcept override
+    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
     {
-        m_udp.Send(std::move(send_packet));
+        m_udp.Send(std::move(send_packet_ptr));
     }
 };
 
@@ -42,22 +43,20 @@ public:
         : SendPacket {recv_packet_ptr->address, 1}
         , m_recv_packet_ptr {std::move(recv_packet_ptr)}
     {
-        iovs[0].iov_base   = m_recv_packet_ptr->message.data;
-        iovs[0].iov_len    = m_recv_packet_ptr->message.size;
+        (*iovs)[0].iov_base   = m_recv_packet_ptr->message.data;
+        (*iovs)[0].iov_len    = m_recv_packet_ptr->message.size;
     }
 };
 
 
-class TestEchoServer : public IPacketReceiver
+class TestEchoServer : public IReceiver
 {
 private:
     Server m_server;
 public:
     explicit TestEchoServer(IUDP& udp) noexcept
-        : m_server {udp}
+        : m_server {udp, 53548}
     {
-        udp.Bind(53548);
-
         for (;;)
         {
             m_server.RecvUpdate(*this);

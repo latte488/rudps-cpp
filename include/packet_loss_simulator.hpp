@@ -27,9 +27,9 @@ public:
         m_udp.Bind(port);
     }
 
-    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
+    void RecvUpdate(IReceiver& receiver) noexcept override
     {
-        m_udp.RecvUpdate(packet_receiver);
+        m_udp.RecvUpdate(receiver);
     }
     
     void SendUpdate() noexcept override

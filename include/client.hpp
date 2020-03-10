@@ -2,9 +2,9 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <interface.hpp>
+#include <i_udp.hpp>
 
-class Client : public IClient
+class Client : public IUDPSender
 {
 private:
     IUDP& m_udp;
@@ -14,9 +14,9 @@ public:
     {
     }
 
-    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
+    void RecvUpdate(IReceiver& receiver) noexcept override
     {
-        m_udp.RecvUpdate(packet_receiver);
+        m_udp.RecvUpdate(receiver);
     }
 
     void SendUpdate() noexcept override
@@ -24,9 +24,9 @@ public:
         m_udp.SendUpdate();
     }
 
-    void Send(std::unique_ptr<SendPacket>&& send_packet) noexcept override
+    void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
     {
-        m_udp.Send(std::move(send_packet));
+        m_udp.Send(std::move(send_packet_ptr));
     }
 };
 
@@ -36,7 +36,7 @@ public:
 #include <frame_timer.hpp>
 #include <string.h>
 
-class TestEchoClient : public IPacketReceiver
+class TestEchoClient : public IReceiver
 {
 private:
     Client m_client;
@@ -77,10 +77,10 @@ public:
                 {
                     exit(0);
                 }
-                auto send_packet = std::make_unique<SendPacket>(address, 1);
-                send_packet->iovs[0].iov_base = message;
-                send_packet->iovs[0].iov_len  = strlen(message);
-                m_client.Send(std::move(send_packet));
+                auto send_packet_ptr = std::make_unique<SendPacket>(address, 1);
+                (*send_packet_ptr->iovs)[0].iov_base = message;
+                (*send_packet_ptr->iovs)[0].iov_len  = strlen(message);
+                m_client.Send(std::move(send_packet_ptr));
             }
 
             m_client.SendUpdate();

@@ -1,4 +1,3 @@
-
 #ifndef PACKET_HPP
 #define PACKET_HPP
 
@@ -18,13 +17,11 @@ struct RecvPacket
 struct SendPacket
 {
     sockaddr_in& address;
-    size_t iovs_size;
-    std::unique_ptr<iovec[]> iovs;
+    std::unique_ptr<std::vector<iovec>> iovs;
 
     explicit SendPacket(sockaddr_in& address_, size_t iovs_size_) noexcept
         : address {address_}
-        , iovs_size {iovs_size_}
-        , iovs {std::make_unique<iovec[]>(iovs_size)}
+        , iovs {std::make_unique<std::vector<iovec>>(iovs_size_)}
     {
         
     }

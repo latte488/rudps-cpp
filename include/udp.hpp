@@ -10,7 +10,7 @@
 #include <array>
 #include <deque>
 
-#include <interface.hpp>
+#include <i_udp.hpp>
 
 class UDP : public IUDP
 {
@@ -68,7 +68,7 @@ public:
         close(m_socket_fd);
     }
 
-    void RecvUpdate(IPacketReceiver& packet_receiver) noexcept override
+    void RecvUpdate(IReceiver& receiver) noexcept override
     {
         const int recvmmsg_result = recvmmsg(m_socket_fd, m_recv_mmhs, MAX_RECV_UNIT, MSG_DONTWAIT, NULL);
 
@@ -77,7 +77,7 @@ public:
             for (int i = 0; i < recvmmsg_result; ++i)
             {
                 m_recv_packet_ptrs[i]->message.size = m_recv_mmhs[i].msg_len;
-                packet_receiver.Receive(std::move(m_recv_packet_ptrs[i]));
+                receiver.Receive(std::move(m_recv_packet_ptrs[i]));
                 m_recv_packet_ptrs[i] = std::make_unique<RecvPacket>();
                 SetToMessageHeader(m_recv_mmhs[i].msg_hdr, *m_recv_packet_ptrs[i], m_recv_iovs[i]);
             }
@@ -124,8 +124,8 @@ private:
     {
         msg_hdr.msg_name        = &send_packet.address;
         msg_hdr.msg_namelen     = sizeof(send_packet.address);
-        msg_hdr.msg_iov         = send_packet.iovs.get();
-        msg_hdr.msg_iovlen      = send_packet.iovs_size;
+        msg_hdr.msg_iov         = send_packet.iovs->data();
+        msg_hdr.msg_iovlen      = send_packet.iovs->size();
         msg_hdr.msg_control     = NULL;
         msg_hdr.msg_controllen  = 0;
         msg_hdr.msg_flags       = 0;

@@ -7,5 +7,7 @@
 #define MAX_RECV_UNIT 10
 #define MAX_SEND_UNIT 10
 
+#define RUDPS_CONTACT_SESSION_TIMEOUT 1e9
+
 #endif
 
