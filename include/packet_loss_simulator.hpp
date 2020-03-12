@@ -22,19 +22,19 @@ public:
         
     }
 
-    void Bind(const uint16_t port) noexcept override
+    void Bind(const uint16_t port) noexcept
     {
         m_udp.Bind(port);
     }
 
-    void RecvUpdate(IReceiver& receiver) noexcept override
+    void UpdateOfReceivePacket(IReceiverOfPacket& receiver) noexcept override
     {
-        m_udp.RecvUpdate(receiver);
+        m_udp.UpdateOfReceivePacket(receiver);
     }
     
-    void SendUpdate() noexcept override
+    void UpdateOfSendPacket() noexcept override
     {
-        m_udp.SendUpdate();
+        m_udp.UpdateOfSendPacket();
     }
 
     void Send(std::unique_ptr<SendPacket>&& send_packet_ptr) noexcept override
@@ -49,7 +49,7 @@ public:
 #define TEST
 #ifdef TEST
 
-#include <client.hpp>
+#include <test_echo_client.hpp>
 
 int packet_loss_simulator_test()
 {

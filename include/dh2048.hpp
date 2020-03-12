@@ -5,7 +5,7 @@
 #include <openssl/dh.h>
 #include <openssl/rand.h>
 
-#define DHL_KEY_SIZE 256
+#define DH2048_KEY_SIZE 256
 
 DH *get_dh2048()
 {
@@ -77,7 +77,7 @@ class DH2048
 private:
     DH* m_dh;
 public:
-    uint8_t public_key[DHL_KEY_SIZE];
+    uint8_t public_key[DH2048_KEY_SIZE];
     
     explicit DH2048() noexcept
         : m_dh {get_dh2048()}
@@ -99,7 +99,7 @@ public:
 
     void ComputeKey(uint8_t* key, uint8_t* remote_public_key) noexcept
     {
-        DH_compute_key(key, BN_bin2bn(remote_public_key, DHL_KEY_SIZE, NULL), m_dh);
+        DH_compute_key(key, BN_bin2bn(remote_public_key, DH2048_KEY_SIZE, NULL), m_dh);
     }
 
     ~DH2048() noexcept

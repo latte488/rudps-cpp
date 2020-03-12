@@ -7,7 +7,14 @@
 #define MAX_RECV_UNIT 10
 #define MAX_SEND_UNIT 10
 
+#define RUDPS_TYPE_SIZE 1
+
+#define RUDPS_CONTACT_MAX 10
 #define RUDPS_CONTACT_SESSION_TIMEOUT 1e9
+
+#define RUDPS_TYPE_CONTACT  0
+#define RUDPS_TYPE_AUTH     1
+#define RUDPS_TYPE_MESSAGE  2
 
 #endif
 
