@@ -108,7 +108,6 @@ public:
     }
 };
 
-
 #ifdef TEST
 
 int dh2048_test()
@@ -116,10 +115,10 @@ int dh2048_test()
     setup_rand_seed();
 
     DH2048 alice;
-    uint8_t alice_common_key[DHL_KEY_SIZE];
+    uint8_t alice_common_key[DH2048_KEY_SIZE];
 
     DH2048 bob;
-    uint8_t bob_common_key[DHL_KEY_SIZE];
+    uint8_t bob_common_key[DH2048_KEY_SIZE];
 
     alice.ComputeKey(alice_common_key, bob.public_key);
     bob.ComputeKey(bob_common_key, alice.public_key);
@@ -127,7 +126,7 @@ int dh2048_test()
     auto f = [&](const char* name, uint8_t* data)
     {
         printf("%s :\n", name);
-        for (size_t i = 0; i < DHL_KEY_SIZE; ++i)
+        for (size_t i = 0; i < DH2048_KEY_SIZE; ++i)
         {
             printf("0x%02x ", data[i]);
             if ((i + 1) % 16 == 0)

@@ -28,6 +28,7 @@ struct IUDP : public ISender
 struct IReceiverOfTypePacket
 {
     virtual void Receive(std::unique_ptr<TypeReceivePacket>&&) = 0;
+    virtual void UpdateOfTypePacket() = 0;
     virtual ~IReceiverOfTypePacket() {}
 };
 

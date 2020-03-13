@@ -28,6 +28,14 @@ public:
         auto& receiver = receiver_ptrs[recv_packet->message.data[0]];
         receiver->Receive(std::make_unique<TypeReceivePacket>(std::move(recv_packet)));
     }
+
+    void UpdateOfTypePacket() noexcept
+    {
+        for (auto& receiver : receiver_ptrs)
+        {
+            receiver->UpdateOfTypePacket();
+        }
+    }
 };
 
 #endif

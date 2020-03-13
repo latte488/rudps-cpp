@@ -10,6 +10,11 @@ class TypeEmptyReceiver : public IReceiverOfTypePacket
     {
 
     }
+
+    void UpdateOfTypePacket() noexcept
+    {
+        
+    }
 };
 
 

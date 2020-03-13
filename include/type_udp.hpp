@@ -14,7 +14,7 @@ public:
         : m_udp {udp}
         , m_type_divider {}
     {
-
+    
     }
 
     void SetReceiver(const uint8_t type, std::unique_ptr<IReceiverOfTypePacket>&& receiver_ptr) noexcept
