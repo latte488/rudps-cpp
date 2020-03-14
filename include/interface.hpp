@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include <packet.hpp>
-#include <type_packet.hpp>
 
 struct IReceiverOfPacket
 {
@@ -23,13 +22,6 @@ struct IUDP : public ISender
 {
     virtual void UpdateOfReceivePacket(IReceiverOfPacket&) = 0;
     virtual void UpdateOfSendPacket() = 0;
-};
-
-struct IReceiverOfTypePacket
-{
-    virtual void Receive(std::unique_ptr<TypeReceivePacket>&&) = 0;
-    virtual void UpdateOfTypePacket() = 0;
-    virtual ~IReceiverOfTypePacket() {}
 };
 
 #endif

@@ -39,11 +39,11 @@ struct RUDPSContactRequest : public SendPacket
 
 struct RUDPSContactReply : public SendPacket
 {
-    std::unique_ptr<TypeReceivePacket> receive_packet_ptr;
+    std::unique_ptr<ReceivePacket> receive_packet_ptr;
 
     explicit RUDPSContactReply
     (
-        std::unique_ptr<TypeReceivePacket>&& recv_ptr,
+        std::unique_ptr<ReceivePacket>&& recv_ptr,
         uint8_t* nonce,
         uint8_t* public_key
     ) noexcept
@@ -53,8 +53,8 @@ struct RUDPSContactReply : public SendPacket
         if (RAND_bytes(nonce, RUDPS_CONTACT_NONCE_SIZE))
         {
             auto& ios = *iovs;
-            ios[0].iov_base = &receive_packet_ptr->type;
-            ios[0].iov_len  = sizeof(receive_packet_ptr->type);
+            ios[0].iov_base = &receive_packet_ptr->message.data[0];
+            ios[0].iov_len  = sizeof(RUDPS_TYPE_SIZE);
             ios[1].iov_base = nonce;
             ios[1].iov_len  = RUDPS_CONTACT_NONCE_SIZE;
             ios[2].iov_base = public_key;
